@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Bike Rental Demo",
+    "slug": "bike-rental-demo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0F14"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Aplikacija koristi lokaciju za prikaz bicikala u okolini i proveru parking zona.",
+        "NSCameraUsageDescription": "Kamera je potrebna za skeniranje QR koda i fotografisanje bicikla pri vraćanju.",
+        "NSPhotoLibraryUsageDescription": "Galerija se koristi za dodavanje fotografije prilikom prijave problema.",
+        "NSPhotoLibraryAddUsageDescription": "Aplikacija može da sačuva fotografije u evidenciji lokalno na uređaju."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0F14"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Dozvoli aplikaciji pristup kameri (QR skeniranje i fotografija pri vraćanju)."
+        }
+      ]
+    ]
+  }
+}

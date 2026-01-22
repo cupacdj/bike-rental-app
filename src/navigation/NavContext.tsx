@@ -12,7 +12,8 @@ export type Route =
   | { name: 'RentalDetails'; rentalId: string }
   | { name: 'EditProfile' }
   | { name: 'ChangePassword' }
-  | { name: 'ReportIssue'; bikeId?: string; rentalId?: string };
+  | { name: 'ReportIssue'; bikeId?: string; rentalId?: string }
+  | { name: 'SyncSettings' };
 
 export type Nav = {
   route: Route;

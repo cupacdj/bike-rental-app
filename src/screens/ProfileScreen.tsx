@@ -25,6 +25,7 @@ export function ProfileScreen() {
   const menuItems = [
     { icon: 'person-outline', label: 'Izmeni lične podatke', onPress: () => nav.push({ name: 'EditProfile' }) },
     { icon: 'lock-closed-outline', label: 'Promeni lozinku', onPress: () => nav.push({ name: 'ChangePassword' }) },
+    { icon: 'cloud-outline', label: 'Sync Settings', onPress: () => nav.push({ name: 'SyncSettings' }) },
   ];
 
   return (

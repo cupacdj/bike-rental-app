@@ -19,7 +19,7 @@ Mobilna aplikacija (React Native + Expo) za iznajmljivanje bicikala **bez baze i
 
 1) Raspakuj ZIP i uđi u folder projekta:
 ```bash
-cd bike-rental-expo-clean
+cd bike-rental
 ```
 
 2) Instaliraj zavisnosti:

@@ -16,22 +16,33 @@ export async function putRemoteState(state: RemoteState): Promise<void> {
  */
 export async function uploadImageAsync(localUri: string, kind: "rental" | "issue"): Promise<string> {
   const filename = localUri.split("/").pop() || `${kind}_${Date.now()}.jpg`;
-  const ext = filename.includes(".") ? filename.split(".").pop() : "jpg";
+  const ext = filename.includes(".") ? filename.split(".").pop()?.toLowerCase() : "jpg";
   const mime = ext === "png" ? "image/png" : "image/jpeg";
 
+  // Create FormData - note: 'kind' must be appended before 'file' for multer to read it
   const form = new FormData();
+  form.append("kind", kind);
   form.append("file", {
     uri: localUri,
     name: filename,
     type: mime,
   } as any);
-  form.append("kind", kind);
 
-  const res = await apiFetch("/api/upload", { method: "POST", body: form });
+  console.log('[uploadImageAsync] Uploading:', { localUri, kind, filename, mime });
+
+  const res = await apiFetch("/api/upload", { 
+    method: "POST", 
+    body: form,
+    // Don't set Content-Type header - let fetch set it with boundary
+  });
+  
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    console.error('[uploadImageAsync] Upload failed:', res.status, text);
     throw new Error(text || `Upload failed (${res.status})`);
   }
+  
   const data = (await res.json()) as { url: string };
+  console.log('[uploadImageAsync] Upload success:', data.url);
   return data.url;
 }

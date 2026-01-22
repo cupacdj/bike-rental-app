@@ -20,6 +20,7 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
 import { ChangePasswordScreen } from '../screens/ChangePasswordScreen';
 import { ReportIssueScreen } from '../screens/ReportIssueScreen';
+import SyncSettingsScreen from '../screens/SyncSettingsScreen';
 import { useTheme } from '../contexts/ThemeContext';
 
 export function Router() {
@@ -86,6 +87,7 @@ export function Router() {
           {route.name === 'EditProfile' && <EditProfileScreen />}
           {route.name === 'ChangePassword' && <ChangePasswordScreen />}
           {route.name === 'ReportIssue' && <ReportIssueScreen bikeId={route.bikeId} rentalId={route.rentalId} />}
+          {route.name === 'SyncSettings' && <SyncSettingsScreen onDone={() => nav.pop()} />}
         </SafeAreaView>
       </NavCtx.Provider>
     </SafeAreaProvider>

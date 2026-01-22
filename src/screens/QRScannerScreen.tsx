@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View, KeyboardAvoidingView, Platform, ScrollView, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '../components/AppButton';
@@ -80,7 +80,11 @@ export function QRScannerScreen() {
           </View>
         </Screen>
       ) : (
-        <View style={styles.body}>
+        <KeyboardAvoidingView 
+          style={styles.body}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        >
           <View style={styles.cameraWrap}>
             <CameraView
               style={StyleSheet.absoluteFill}
@@ -100,22 +104,30 @@ export function QRScannerScreen() {
             </View>
           </View>
 
-          <View style={[styles.panel, { backgroundColor: theme.background, borderTopColor: theme.border }]}>
-            <Text style={[styles.manualLabel, { color: theme.textMuted }]}>Ili unesite kod ručno:</Text>
+          <ScrollView 
+            style={[styles.panel, { backgroundColor: theme.background, borderTopColor: theme.border }]}
+            contentContainerStyle={styles.panelContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text style={[styles.manualLabel, { color: theme.textMuted }]}>Ili unesite kod ručno (ID ili oznaku bicikla):</Text>
             <View style={styles.manualRow}>
               <TextInput
                 value={manual}
                 onChangeText={setManual}
-                placeholder="bike_1"
+                placeholder="bike_1 ili BG-001"
                 placeholderTextColor={theme.textMuted}
                 style={[styles.manualInput, { backgroundColor: theme.surface, color: theme.textPrimary }]}
                 autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="go"
+                onSubmitEditing={() => { Keyboard.dismiss(); tryStartFromCode(manual); }}
               />
-              <AppButton title={busy ? '...' : 'Pokreni'} onPress={() => tryStartFromCode(manual)} disabled={busy} style={{ minWidth: 100 }} />
+              <AppButton title={busy ? '...' : 'Pokreni'} onPress={() => { Keyboard.dismiss(); tryStartFromCode(manual); }} disabled={busy} style={{ minWidth: 100 }} />
             </View>
             <AppButton title="Skeniraj ponovo" onPress={() => setScanned(false)} variant="ghost" icon="refresh-outline" />
-          </View>
-        </View>
+            <View style={{ height: 20 }} />
+          </ScrollView>
+        </KeyboardAvoidingView>
       )}
     </View>
   );
@@ -140,7 +152,8 @@ const styles = StyleSheet.create({
   cornerTR: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 12 },
   cornerBL: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 12 },
   cornerBR: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 12 },
-  panel: { padding: 16, borderTopWidth: 1 },
+  panel: { borderTopWidth: 1, maxHeight: 200 },
+  panelContent: { padding: 16 },
   manualLabel: { fontSize: 13, marginBottom: 10 },
   manualRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   manualInput: { flex: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },

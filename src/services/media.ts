@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const FileSystem = require('expo-file-system') as typeof import('expo-file-system');
+// Use the legacy API to avoid deprecation warnings
+import * as FileSystem from 'expo-file-system/legacy';
 
 const PHOTOS_DIR = `${FileSystem.documentDirectory}photos/`;
 

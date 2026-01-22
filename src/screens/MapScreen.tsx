@@ -12,11 +12,12 @@ type Coord = { lat: number; lng: number };
 
 export function MapScreen() {
   const nav = useNav();
-  const { state } = useAppData();
+  const { state, isOnline, refreshFromServer } = useAppData();
   const { theme, mode } = useTheme();
   const [loc, setLoc] = useState<Coord | null>(null);
   const [permission, setPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const [nearOnly, setNearOnly] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -71,6 +72,12 @@ export function MapScreen() {
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
     } catch {}
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await refreshFromServer();
+    setRefreshing(false);
   }
 
   return (
@@ -128,6 +135,18 @@ export function MapScreen() {
                 <Text style={[styles.statLabel, { color: theme.textMuted }]}>Ukupno</Text>
               </View>
             </View>
+            <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+            {/* Online indicator */}
+            <View style={styles.statItem}>
+              <View style={[styles.statIconWrap, { backgroundColor: isOnline ? '#22c55e20' : '#ef444420' }]}>
+                <Ionicons name={isOnline ? "cloud-done" : "cloud-offline"} size={18} color={isOnline ? "#22c55e" : "#ef4444"} />
+              </View>
+              <View>
+                <Text style={[styles.statLabel, { color: isOnline ? "#22c55e" : "#ef4444" }]}>
+                  {isOnline ? 'Online' : 'Offline'}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
 
@@ -153,6 +172,21 @@ export function MapScreen() {
 
         {/* Map Control Buttons */}
         <View style={styles.mapControls}>
+          {/* Refresh Button */}
+          <TouchableOpacity
+            style={[styles.mapBtn, { backgroundColor: theme.surface, shadowColor: theme.textPrimary }]}
+            onPress={handleRefresh}
+            activeOpacity={0.8}
+            disabled={refreshing}
+          >
+            <Ionicons
+              name="refresh"
+              size={22}
+              color={refreshing ? theme.textMuted : theme.primary}
+              style={refreshing ? { transform: [{ rotate: '45deg' }] } : undefined}
+            />
+          </TouchableOpacity>
+
           {/* My Location Button */}
           <TouchableOpacity
             style={[styles.mapBtn, { backgroundColor: theme.surface, shadowColor: theme.textPrimary }]}

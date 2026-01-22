@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { buildInitialState } from '../data/seed';
 import { AppNotification, AppState, Bike, BikeStatus, IssueReport, ParkingZone, Rental, User } from '../types';
@@ -57,6 +57,7 @@ type AppData = {
   ready: boolean;
   state: AppState;
   currentUser?: User;
+  isOnline: boolean;
 
   // Auth
   register: (input: RegisterInput) => Promise<boolean>;
@@ -83,6 +84,9 @@ type AppData = {
   // Issues
   reportIssue: (input: ReportIssueInput) => Promise<{ ok: boolean; error?: string; issue?: IssueReport }>;
 
+  // Sync
+  refreshFromServer: () => Promise<void>;
+
   // Debug
   resetAllLocalData: () => Promise<void>;
 };
@@ -96,20 +100,101 @@ function uid(prefix: string) {
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<AppState>(() => buildInitialState());
+  const [isOnline, setIsOnline] = useState(false);
+
+  // Helper function to merge arrays by id
+  function mergeArraysById<T extends { id: string }>(local: T[], remote: T[]): T[] {
+    const map = new Map<string, T>();
+    // Add local items first
+    local.forEach(item => map.set(item.id, item));
+    // Override/add remote items (server is source of truth for existing items)
+    remote.forEach(item => map.set(item.id, item));
+    return Array.from(map.values());
+  }
+
+  // Function to fetch fresh data from server
+  const refreshFromServer = useCallback(async () => {
+    try {
+      // Always re-read the server URL (it might have just been saved)
+      const serverUrl = await getServerUrl();
+      console.log('[AppData] Server URL:', serverUrl);
+      
+      if (!serverUrl) {
+        console.log('[AppData] No server URL configured');
+        setIsOnline(false);
+        return;
+      }
+
+      console.log('[AppData] Fetching data from server...');
+      const remoteState = await getRemoteState();
+      console.log('[AppData] Got remote state:', remoteState ? 'success' : 'empty');
+      setIsOnline(true);
+
+      // Merge server data with local user session
+      // Server has: bikes, parkingZones, rentals, issues, notifications
+      // Local keeps: users, currentUserId (user session)
+      setState(prev => {
+        const merged: AppState = {
+          ...prev,
+          // From server (admin manages these)
+          bikes: remoteState.bikes || prev.bikes,
+          parkingZones: remoteState.parkingZones || prev.parkingZones,
+          // Merge rentals - keep local rentals and add server ones
+          rentals: mergeArraysById(prev.rentals, remoteState.rentals || []),
+          // Merge issues
+          issues: mergeArraysById(prev.issues, remoteState.issues || []),
+          // Merge notifications
+          notifications: mergeArraysById(prev.notifications, remoteState.notifications || []),
+          // Keep local users and merge with server users
+          users: mergeArraysById(prev.users, remoteState.users || []),
+          // Keep current user session
+          currentUserId: prev.currentUserId,
+        };
+        return merged;
+      });
+
+      console.log('[AppData] Server data synced successfully');
+    } catch (error) {
+      console.warn('[AppData] Failed to fetch from server:', error);
+      setIsOnline(false);
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
-      // Temporarily force reset to see new parking zones - REMOVE THIS AFTER TESTING
-      // await clearState();
-      
+      // Load local state first
       const loaded = await loadState();
       if (loaded) {
         setState(loaded);
       } else {
         const initial = buildInitialState();
         setState(initial);
-        await saveStateSmart(initial);
+        await saveState(initial);
       }
+      
+      // Then try to sync with server
+      try {
+        const serverUrl = await getServerUrl();
+        if (serverUrl) {
+          console.log('[AppData] Server URL configured, fetching remote data...');
+          const remoteState = await getRemoteState();
+          setIsOnline(true);
+          
+          setState(prev => ({
+            ...prev,
+            bikes: remoteState.bikes || prev.bikes,
+            parkingZones: remoteState.parkingZones || prev.parkingZones,
+            rentals: mergeArraysById(prev.rentals, remoteState.rentals || []),
+            issues: mergeArraysById(prev.issues, remoteState.issues || []),
+            notifications: mergeArraysById(prev.notifications, remoteState.notifications || []),
+            users: mergeArraysById(prev.users, remoteState.users || []),
+          }));
+        }
+      } catch (error) {
+        console.warn('[AppData] Could not connect to server:', error);
+        setIsOnline(false);
+      }
+      
       setReady(true);
     })();
   }, []);
@@ -121,17 +206,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   async function commit(next: AppState) {
     setState(next);
-    await saveStateSmart(next);
+    // Always save locally first
+    await saveState(next);
+    // Then try to sync to server
+    await syncToServer(next);
   }
 
-  async function saveStateSmart(state: any) {
-    const serverUrl = await getServerUrl();
-    if (serverUrl) {
-      await putRemoteState(state);
-    } else {
-      // tvoj postojeći local save
-      const { saveState } = await import("../services/storage");
-      await saveState(state);
+  async function syncToServer(stateToSync: AppState) {
+    try {
+      const serverUrl = await getServerUrl();
+      if (serverUrl) {
+        await putRemoteState(stateToSync);
+        setIsOnline(true);
+      }
+    } catch (error) {
+      console.warn('[AppData] Failed to sync to server:', error);
+      setIsOnline(false);
     }
   }
 
@@ -307,7 +397,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }
 
   function getBikeById(bikeId: string): Bike | undefined {
-    return state.bikes.find((b) => b.id === bikeId);
+    // Search by ID first, then by label (case-insensitive)
+    const searchTerm = bikeId.trim();
+    return state.bikes.find((b) => 
+      b.id === searchTerm || 
+      b.id.toLowerCase() === searchTerm.toLowerCase() ||
+      b.label.toLowerCase() === searchTerm.toLowerCase()
+    );
   }
 
   function nearestParkingFor(lat: number, lng: number) {
@@ -351,10 +447,17 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: 'Već imate aktivno iznajmljivanje.' };
     }
 
+    // Debug: log available bikes
+    console.log('[startRental] Looking for bike:', input.bikeId);
+    console.log('[startRental] Available bikes:', state.bikes.map(b => ({ id: b.id, label: b.label, status: b.status })));
+
     const bike = getBikeById(input.bikeId);
-    if (!bike) return { ok: false, error: 'Bicikl ne postoji.' };
+    if (!bike) {
+      const availableBikes = state.bikes.map(b => b.label || b.id).join(', ');
+      return { ok: false, error: `Bicikl "${input.bikeId}" ne postoji. Dostupni: ${availableBikes || 'nema'}` };
+    }
     if (bike.status !== 'available') {
-      return { ok: false, error: 'Bicikl nije dostupan.' };
+      return { ok: false, error: `Bicikl ${bike.label} nije dostupan (status: ${bike.status}).` };
     }
 
     const rental: Rental = {
@@ -408,13 +511,29 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: 'Fotografija je obavezna.' };
     }
 
-    // Persist photo to app documents
-    let savedPhoto: string;
+    // Try to save photo locally first
+    let savedPhoto: string = input.returnPhotoUri;
     try {
       savedPhoto = await persistPhoto(input.returnPhotoUri, `return_${rental.id}`);
     } catch (e) {
-      console.warn(e);
-      return { ok: false, error: 'Neuspešno čuvanje fotografije. Pokušajte ponovo.' };
+      console.warn('[endRental] Local photo save failed:', e);
+      // Continue with original URI - we'll try to upload to server
+    }
+
+    // Try to upload photo to server
+    let serverPhotoUrl: string | undefined;
+    try {
+      const serverUrl = await getServerUrl();
+      if (serverUrl) {
+        console.log('[endRental] Uploading photo to server...');
+        serverPhotoUrl = await uploadImageAsync(input.returnPhotoUri, 'rental');
+        console.log('[endRental] Photo uploaded:', serverPhotoUrl);
+        // Use server URL as the photo reference
+        savedPhoto = serverPhotoUrl;
+      }
+    } catch (e) {
+      console.warn('[endRental] Server photo upload failed:', e);
+      // Continue with local photo - will be synced later
     }
 
     const endAt = Date.now();
@@ -511,7 +630,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await clearState();
     const initial = buildInitialState();
     setState(initial);
-    await saveStateSmart(initial);
+    // Try to sync fresh from server after reset
+    await refreshFromServer();
     Alert.alert('Reset', 'Lokalni podaci su obrisani.');
   }
 
@@ -519,6 +639,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     ready,
     state,
     currentUser,
+    isOnline,
     register,
     login,
     logout,
@@ -532,6 +653,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     isInsideAnyParking,
     notificationsForUser,
     reportIssue,
+    refreshFromServer,
     resetAllLocalData,
   };
 

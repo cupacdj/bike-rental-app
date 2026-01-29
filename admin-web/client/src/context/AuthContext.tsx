@@ -50,13 +50,19 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     setAdmin(null);
   };
 
+  const updateAdminInfo = (updatedAdmin: Admin): void => {
+    setAdmin(updatedAdmin);
+    localStorage.setItem('adminInfo', JSON.stringify(updatedAdmin));
+  };
+
   return (
     <AuthContext.Provider value={{
       admin,
       isAuthenticated: !!admin,
       loading,
       login,
-      logout
+      logout,
+      updateAdminInfo
     }}>
       {children}
     </AuthContext.Provider>

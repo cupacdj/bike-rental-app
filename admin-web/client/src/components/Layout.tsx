@@ -10,7 +10,8 @@ import {
   Menu, 
   ChevronRight,
   LucideIcon,
-  ParkingSquare
+  ParkingSquare,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import type { LayoutProps, SidebarProps } from '../types';
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
   { path: '/parking-zones', icon: ParkingSquare, label: 'Parking zone' },
   { path: '/rentals', icon: Clock, label: 'Iznajmljivanja' },
   { path: '/issues', icon: AlertTriangle, label: 'Prijavljeni problemi' },
+  { path: '/settings', icon: Settings, label: 'Podešavanja' },
 ];
 
 function Sidebar({ isOpen, onClose }: SidebarProps): JSX.Element {

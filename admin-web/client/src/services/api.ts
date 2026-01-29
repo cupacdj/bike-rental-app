@@ -114,3 +114,31 @@ export const parkingZonesApi = {
 export const statsApi = {
   getDashboard: (): Promise<DashboardStats> => api.get<DashboardStats>('/api/admin/stats')
 };
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangeUsernameRequest {
+  newUsername: string;
+  password: string;
+}
+
+export interface ChangeUsernameResponse {
+  success: boolean;
+  admin?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    createdAt: number;
+  };
+}
+
+export const profileApi = {
+  changePassword: (data: ChangePasswordRequest): Promise<{ success: boolean }> => 
+    api.post<{ success: boolean }>('/api/admin/change-password', data),
+  changeUsername: (data: ChangeUsernameRequest): Promise<ChangeUsernameResponse> => 
+    api.post<ChangeUsernameResponse>('/api/admin/change-username', data)
+};

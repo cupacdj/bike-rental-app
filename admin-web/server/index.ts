@@ -305,6 +305,97 @@ app.post('/api/admin/login', (req: Request, res: Response): void => {
   });
 });
 
+// Change password
+app.post('/api/admin/change-password', verifyAdmin, (req: AuthenticatedRequest, res: Response): void => {
+  const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
+
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ error: 'Trenutna i nova lozinka su obavezne.' });
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    res.status(400).json({ error: 'Nova lozinka mora imati najmanje 6 karaktera.' });
+    return;
+  }
+
+  const admin = req.admin;
+  if (!admin) {
+    res.status(401).json({ error: 'Neautorizovan pristup.' });
+    return;
+  }
+
+  // Verify current password
+  const isValid = bcrypt.compareSync(currentPassword, admin.passwordHash);
+  if (!isValid) {
+    res.status(401).json({ error: 'Trenutna lozinka nije ispravna.' });
+    return;
+  }
+
+  // Update password
+  const adminIndex = admins.findIndex(a => a.id === admin.id);
+  if (adminIndex === -1) {
+    res.status(404).json({ error: 'Administrator nije pronađen.' });
+    return;
+  }
+
+  admins[adminIndex].passwordHash = bcrypt.hashSync(newPassword, 10);
+  saveAdmins(admins);
+
+  res.json({ success: true });
+});
+
+// Change username
+app.post('/api/admin/change-username', verifyAdmin, (req: AuthenticatedRequest, res: Response): void => {
+  const { newUsername, password } = req.body as { newUsername?: string; password?: string };
+
+  if (!newUsername || !password) {
+    res.status(400).json({ error: 'Novo korisničko ime i lozinka su obavezni.' });
+    return;
+  }
+
+  if (newUsername.length < 3) {
+    res.status(400).json({ error: 'Korisničko ime mora imati najmanje 3 karaktera.' });
+    return;
+  }
+
+  const admin = req.admin;
+  if (!admin) {
+    res.status(401).json({ error: 'Neautorizovan pristup.' });
+    return;
+  }
+
+  // Verify password
+  const isValid = bcrypt.compareSync(password, admin.passwordHash);
+  if (!isValid) {
+    res.status(401).json({ error: 'Lozinka nije ispravna.' });
+    return;
+  }
+
+  // Check if username already exists (case-insensitive)
+  const existingAdmin = admins.find(
+    a => a.username.toLowerCase() === newUsername.toLowerCase() && a.id !== admin.id
+  );
+  if (existingAdmin) {
+    res.status(400).json({ error: 'Korisničko ime je već zauzeto.' });
+    return;
+  }
+
+  // Update username
+  const adminIndex = admins.findIndex(a => a.id === admin.id);
+  if (adminIndex === -1) {
+    res.status(404).json({ error: 'Administrator nije pronađen.' });
+    return;
+  }
+
+  admins[adminIndex].username = newUsername;
+  saveAdmins(admins);
+
+  // Return updated admin info
+  const { passwordHash, ...adminInfo } = admins[adminIndex];
+  res.json({ success: true, admin: adminInfo });
+});
+
 // ==================== STATE SYNC ROUTES (for mobile app) ====================
 
 app.get('/api/state', (req: Request, res: Response): void => {

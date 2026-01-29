@@ -8,6 +8,7 @@ import Bikes from './pages/Bikes';
 import ParkingZones from './pages/ParkingZones';
 import Rentals from './pages/Rentals';
 import Issues from './pages/Issues';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import type { ProtectedRouteProps } from './types';
 
@@ -47,6 +48,7 @@ function App(): JSX.Element {
                       <Route path="/parking-zones" element={<ParkingZones />} />
                       <Route path="/rentals" element={<Rentals />} />
                       <Route path="/issues" element={<Issues />} />
+                      <Route path="/settings" element={<Settings />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </Layout>

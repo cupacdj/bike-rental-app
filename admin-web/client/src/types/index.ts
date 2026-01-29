@@ -175,6 +175,7 @@ export interface AuthContextType {
   loading: boolean;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  updateAdminInfo: (admin: Admin) => void;
 }
 
 export interface ToastContextType {

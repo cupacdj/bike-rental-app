@@ -8,7 +8,7 @@ import { persistPhoto } from '../services/media';
 import { haversineMeters, money2 } from '../utils/geo';
 import { isEmail, isPhone, isStrongPassword } from '../utils/validators';
 import { getServerUrl } from "../services/syncConfig";
-import { getRemoteState, putRemoteState, uploadImageAsync } from "../services/syncApi";
+import { getRemoteState, putRemoteState, uploadImageAsync, updateBikeLocation } from "../services/syncApi";
 
 type RegisterInput = {
   firstName: string;
@@ -551,7 +551,35 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const rentals = state.rentals.map((r) => (r.id === rental.id ? finished : r));
-    const bikes = state.bikes.map((b) => (b.id === bike.id ? { ...b, status: 'available' as BikeStatus, updatedAt: Date.now() } : b));
+    
+    // Update bike location to return location and update status
+    const updatedBike: Bike = {
+      ...bike,
+      status: 'available' as BikeStatus,
+      updatedAt: Date.now(),
+      // Update bike coordinates to return location
+      ...(input.endLat !== undefined && input.endLng !== undefined && {
+        lat: input.endLat,
+        lng: input.endLng,
+      }),
+    };
+    
+    const bikes = state.bikes.map((b) => (b.id === bike.id ? updatedBike : b));
+
+    // Try to update bike location on server
+    if (input.endLat !== undefined && input.endLng !== undefined) {
+      try {
+        const serverUrl = await getServerUrl();
+        if (serverUrl) {
+          console.log('[endRental] Updating bike location on server...');
+          await updateBikeLocation(bike.id, input.endLat, input.endLng);
+          console.log('[endRental] Bike location updated on server');
+        }
+      } catch (e) {
+        console.warn('[endRental] Failed to update bike location on server:', e);
+        // Continue - bike location is stored locally
+      }
+    }
 
     const notif = addNotification(
       currentUser.id,

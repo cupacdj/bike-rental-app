@@ -116,36 +116,47 @@ export function MapScreen() {
         {/* Top Stats Card */}
         <View style={styles.topOverlay}>
           <View style={[styles.statsCard, { backgroundColor: theme.surface, shadowColor: theme.textPrimary }]}>
+            {/* Available Bikes */}
             <View style={styles.statItem}>
               <View style={[styles.statIconWrap, { backgroundColor: theme.successMuted }]}>
                 <Ionicons name="bicycle" size={18} color={theme.success} />
               </View>
-              <View>
+              <View style={styles.statContent}>
                 <Text style={[styles.statValue, { color: theme.textPrimary }]}>{availableCount}</Text>
                 <Text style={[styles.statLabel, { color: theme.textMuted }]}>Dostupno</Text>
               </View>
             </View>
+
             <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+
+            {/* Total Bikes */}
             <View style={styles.statItem}>
               <View style={[styles.statIconWrap, { backgroundColor: theme.primaryMuted }]}>
                 <Ionicons name="location" size={18} color={theme.primary} />
               </View>
-              <View>
+              <View style={styles.statContent}>
                 <Text style={[styles.statValue, { color: theme.textPrimary }]}>{totalCount}</Text>
                 <Text style={[styles.statLabel, { color: theme.textMuted }]}>Ukupno</Text>
               </View>
             </View>
+
             <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-            {/* Online indicator */}
-            <View style={styles.statItem}>
-              <View style={[styles.statIconWrap, { backgroundColor: isOnline ? '#22c55e20' : '#ef444420' }]}>
-                <Ionicons name={isOnline ? "cloud-done" : "cloud-offline"} size={18} color={isOnline ? "#22c55e" : "#ef4444"} />
-              </View>
-              <View>
-                <Text style={[styles.statLabel, { color: isOnline ? "#22c55e" : "#ef4444" }]}>
-                  {isOnline ? 'Online' : 'Offline'}
-                </Text>
-              </View>
+
+            {/* Status Badge */}
+            <View style={[
+              styles.statusBadge,
+              { backgroundColor: isOnline ? theme.successMuted : theme.dangerMuted }
+            ]}>
+              <View style={[
+                styles.statusDot,
+                { backgroundColor: isOnline ? theme.success : theme.danger }
+              ]} />
+              <Text style={[
+                styles.statusText,
+                { color: isOnline ? theme.success : theme.danger }
+              ]}>
+                {isOnline ? 'Online' : 'Offline'}
+              </Text>
             </View>
           </View>
         </View>
@@ -255,10 +266,23 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   statItem: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  statContent: { justifyContent: 'center' },
   statIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 18, fontWeight: '800' },
   statLabel: { fontSize: 12, marginTop: -2 },
   statDivider: { width: 1, height: 36, marginHorizontal: 12 },
+
+  // Status Badge
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusText: { fontSize: 12, fontWeight: '600' },
 
   // Warning
   warningOverlay: { position: 'absolute', top: 88, left: 16, right: 16 },

@@ -445,6 +445,49 @@ app.post('/api/upload', upload.single('file'), (req: Request, res: Response): vo
   res.json({ url });
 });
 
+// ==================== PUBLIC BIKE ROUTES ====================
+
+// Update bike location (called when bike is returned after rental)
+app.patch('/api/bikes/:id/location', (req: Request, res: Response): void => {
+  const bikeIndex = appState.bikes.findIndex(b => b.id === req.params.id);
+  if (bikeIndex === -1) {
+    res.status(404).json({ error: 'Bike not found.' });
+    return;
+  }
+
+  const { lat, lng } = req.body as { lat?: number; lng?: number };
+
+  // Validation
+  if (lat === undefined || lng === undefined) {
+    res.status(400).json({ error: 'Latitude and longitude are required.' });
+    return;
+  }
+
+  if (lat < -90 || lat > 90) {
+    res.status(400).json({ error: 'Invalid latitude.' });
+    return;
+  }
+
+  if (lng < -180 || lng > 180) {
+    res.status(400).json({ error: 'Invalid longitude.' });
+    return;
+  }
+
+  // Update bike location
+  const updatedBike: Bike = {
+    ...appState.bikes[bikeIndex],
+    lat: parseFloat(String(lat)),
+    lng: parseFloat(String(lng)),
+    updatedAt: Date.now()
+  };
+
+  appState.bikes[bikeIndex] = updatedBike;
+  saveState(appState);
+
+  console.log(`[Bike Location] Updated bike ${updatedBike.label} to (${lat}, ${lng})`);
+  res.json({ success: true, bike: updatedBike });
+});
+
 // ==================== ADMIN BIKE ROUTES ====================
 
 app.get('/api/admin/bikes', verifyAdmin, (req: Request, res: Response): void => {

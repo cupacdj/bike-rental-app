@@ -80,25 +80,7 @@ export function ProfileScreen() {
         variant="danger"
         icon="log-out-outline"
       />
-
-      <View style={{ height: 12 }} />
-      <AppButton
-        title="Resetuj demo podatke"
-        onPress={() => {
-          Alert.alert(
-            'Resetuj podatke',
-            'Ovo će obrisati sve lokalne podatke i vratiti aplikaciju na početno stanje. Da li ste sigurni?',
-            [
-              { text: 'Otkaži', style: 'cancel' },
-              { text: 'Resetuj', style: 'destructive', onPress: () => resetAllLocalData() },
-            ]
-          );
-        }}
-        variant="ghost"
-        icon="refresh-outline"
-      />
-
-      <Text style={[styles.footer, { color: theme.textMuted }]}>BikeRent Demo • Podaci se čuvaju lokalno</Text>
+      
     </ScrollView>
   );
 }

@@ -46,3 +46,21 @@ export async function uploadImageAsync(localUri: string, kind: "rental" | "issue
   console.log('[uploadImageAsync] Upload success:', data.url);
   return data.url;
 }
+
+/**
+ * Update bike location on server when bike is returned
+ */
+export async function updateBikeLocation(bikeId: string, lat: number, lng: number): Promise<boolean> {
+  try {
+    console.log('[updateBikeLocation] Updating bike location:', { bikeId, lat, lng });
+    await apiJson(`/api/bikes/${bikeId}/location`, {
+      method: "PATCH",
+      body: JSON.stringify({ lat, lng }),
+    });
+    console.log('[updateBikeLocation] Location updated successfully');
+    return true;
+  } catch (error) {
+    console.error('[updateBikeLocation] Failed to update bike location:', error);
+    return false;
+  }
+}

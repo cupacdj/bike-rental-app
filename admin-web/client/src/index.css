@@ -2,10 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== IMPORT GOOGLE FONTS ===== */
+/*   IMPORT GOOGLE FONTS   */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ===== CSS CUSTOM PROPERTIES ===== */
+/*   CSS CUSTOM PROPERTIES   */
 :root {
   /* Primary Colors */
   --primary: #6366f1;
@@ -63,7 +63,7 @@
   --radius-full: 9999px;
 }
 
-/* ===== BASE STYLES ===== */
+/*   BASE STYLES   */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -88,7 +88,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== SCROLLBAR STYLES ===== */
+/*   SCROLLBAR STYLES   */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -109,13 +109,13 @@ body {
   background: var(--primary);
 }
 
-/* ===== SELECTION STYLES ===== */
+/*   SELECTION STYLES   */
 ::selection {
   background: var(--primary);
   color: white;
 }
 
-/* ===== ANIMATIONS ===== */
+/*   ANIMATIONS   */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -229,7 +229,7 @@ body {
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-glow { animation: glow 2s ease-in-out infinite; }
 
-/* ===== CARD STYLES ===== */
+/*   CARD STYLES   */
 .card {
   background: linear-gradient(145deg, var(--bg-card) 0%, rgba(30, 41, 59, 0.8) 100%);
   backdrop-filter: blur(10px);
@@ -263,7 +263,7 @@ body {
   opacity: 1;
 }
 
-/* ===== STAT CARD ===== */
+/*   STAT CARD   */
 .stat-card {
   position: relative;
   overflow: hidden;
@@ -302,7 +302,7 @@ body {
   transform: scaleX(1);
 }
 
-/* ===== BUTTON STYLES ===== */
+/*   BUTTON STYLES   */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -438,7 +438,7 @@ body {
   padding: 0.5rem;
 }
 
-/* ===== INPUT STYLES ===== */
+/*   INPUT STYLES   */
 .input {
   width: 100%;
   padding: 0.875rem 1rem;
@@ -480,7 +480,7 @@ body {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
-/* ===== SELECT STYLES ===== */
+/*   SELECT STYLES   */
 .select {
   width: 100%;
   padding: 0.875rem 2.5rem 0.875rem 1rem;
@@ -509,7 +509,7 @@ body {
   box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-/* ===== LABEL STYLES ===== */
+/*   LABEL STYLES   */
 .label {
   display: block;
   font-size: 0.875rem;
@@ -523,7 +523,7 @@ body {
   color: var(--danger);
 }
 
-/* ===== BADGE STYLES ===== */
+/*   BADGE STYLES   */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -565,7 +565,7 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
-/* ===== TABLE STYLES ===== */
+/*   TABLE STYLES   */
 .table-container {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -609,7 +609,7 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* ===== MODAL STYLES ===== */
+/*   MODAL STYLES   */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -635,7 +635,7 @@ tbody tr:last-child td {
   animation: scaleIn 0.3s ease-out;
 }
 
-/* ===== TOAST STYLES ===== */
+/*   TOAST STYLES   */
 .toast {
   display: flex;
   align-items: center;
@@ -675,7 +675,7 @@ tbody tr:last-child td {
   border-left: 4px solid #6366f1;
 }
 
-/* ===== LOADING SKELETON ===== */
+/*   LOADING SKELETON   */
 .skeleton {
   background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
   background-size: 200% 100%;
@@ -683,7 +683,7 @@ tbody tr:last-child td {
   border-radius: var(--radius-md);
 }
 
-/* ===== LEAFLET CUSTOM STYLES ===== */
+/*   LEAFLET CUSTOM STYLES   */
 .leaflet-container {
   background: var(--bg-dark);
   border-radius: var(--radius-lg);
@@ -700,7 +700,7 @@ tbody tr:last-child td {
   background: var(--bg-card);
 }
 
-/* ===== UTILITY CLASSES ===== */
+/*   UTILITY CLASSES   */
 .glass {
   background: rgba(30, 41, 59, 0.7);
   backdrop-filter: blur(10px);
@@ -732,7 +732,7 @@ tbody tr:last-child td {
   box-shadow: var(--shadow-lg);
 }
 
-/* ===== RESPONSIVE ===== */
+/*   RESPONSIVE   */
 @media (max-width: 768px) {
   .card {
     padding: 1rem;
@@ -764,7 +764,7 @@ tbody tr:last-child td {
   }
 }
 
-/* ===== FOCUS VISIBLE ===== */
+/*   FOCUS VISIBLE   */
 .btn:focus-visible,
 .input:focus-visible,
 .select:focus-visible {
@@ -772,7 +772,7 @@ tbody tr:last-child td {
   outline-offset: 2px;
 }
 
-/* ===== REDUCED MOTION ===== */
+/*   REDUCED MOTION   */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

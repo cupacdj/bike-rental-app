@@ -22,6 +22,7 @@ export function NotificationsScreen() {
   const { notificationsForUser, state } = useAppData();
   const { theme } = useTheme();
   const list = notificationsForUser();
+  console.log('[Notifications] list length:', list.length, 'total notifications:', state.notifications.length);
 
   if (!list.length) {
     return (

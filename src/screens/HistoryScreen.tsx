@@ -17,10 +17,17 @@ export function HistoryScreen() {
   const { theme } = useTheme();
 
   const items = useMemo(() => {
-    if (!currentUser) return [];
-    return state.rentals
+    if (!currentUser) {
+      console.log('[History] No currentUser');
+      return [];
+    }
+    console.log('[History] currentUser.id:', currentUser.id);
+    console.log('[History] All rental userIds:', state.rentals.map(r => ({ id: r.id, userId: r.userId, status: r.status })));
+    const filtered = state.rentals
       .filter((r) => r.userId === currentUser.id && r.status === 'finished' && r.endAt)
       .sort((a, b) => (b.endAt! - a.endAt!));
+    console.log('[History] Filtered items:', filtered.length);
+    return filtered;
   }, [state.rentals, currentUser?.id]);
 
   if (!items.length) {

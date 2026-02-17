@@ -1,46 +1,61 @@
-# Bike Rental (Expo Go) — lokalno (bez backenda)
+# Bike Rental App
 
-Mobilna aplikacija (React Native + Expo) za iznajmljivanje bicikala **bez baze i bez backenda** — svi podaci se čuvaju lokalno (AsyncStorage + lokalno čuvanje fotografija).
+A bike rental system with mobile app (React Native) and admin web panel.
 
-## Funkcionalnosti (korisnik)
-- Registracija / prijava
-- Izmena profila i promena lozinke
-- Mapa sa biciklima + parking zone (krugovi)
-- Detalji bicikla (tip, cena, status, najbliža parking zona)
-- Pokretanje iznajmljivanja skeniranjem QR koda (ili ručni unos koda)
-- Pregled aktivnog iznajmljivanja (trajanje + trenutna cena)
-- Završetak iznajmljivanja (provera parking zone + obavezna fotografija)
-- Istorija iznajmljivanja + detalji (sa fotografijom vraćanja)
-- Obaveštenja u aplikaciji (početak / završetak / prijava problema)
-- Prijava problema sa biciklom (opis + fotografija)
+## System Overview
 
-## Pokretanje (Expo Go)
-**Preduslovi:** Node.js LTS, instalirana Expo Go aplikacija na telefonu.
+- **Mobile App**: Users can browse bikes, rent them via QR code, track active rentals, and report issues
+- **Admin Panel**: Web dashboard for managing bikes, parking zones, rentals, and user issues
+- **Backend**: Express server with file-based storage (JSON)
 
-1) Raspakuj ZIP i uđi u folder projekta:
+## Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Expo Go
+- Java 17 (for Android builds)
+
+## Installation
+
 ```bash
-cd bike-rental
-```
+# Install server dependencies
+cd admin-web
+npm install
 
-2) Instaliraj zavisnosti:
-```bash
+# Install admin client dependencies
+cd admin-web/client
+npm install
+
+# Install mobile app dependencies
+cd ../..
 npm install
 ```
 
-3) Pokreni razvojni server:
+## Running the Admin Panel
+
 ```bash
-npx expo start
+cd admin-web
+
+# Development mode (runs both server and client)
+npm run dev
+
+# Or run separately:
+npm run server:watch    # Server on http://localhost:5000
+npm run client          # Client on http://localhost:3000
 ```
 
-4) Otvori Expo Go na telefonu i skeniraj QR kod iz terminala / browsera.
+**Default admin login:**
+- Username: `admin`
+- Password: `admin123`
 
-## Test bez pravog QR koda
-Na ekranu **Skeniraj QR** postoji ručni unos. Unesi, na primer:
-- `bike:bike_1`
-- `bike_2`
+## Running the Mobile App
 
-Bicikli i parking zone su seedovani lokalno (Beograd).
+```bash
+# Start Metro bundler
+npm start
 
-## Napomene
-- Završetak iznajmljivanja zahteva lokaciju (provera parking zone). Ako lokacija nije dozvoljena, aplikacija će tražiti da je uključiš.
-- Fotografije se čuvaju lokalno u `FileSystem.documentDirectory/photos/`.
+```
+
+**Configure server URL:**
+- Edit mobile app sync settings to point to your server IP (e.g., `http://192.168.1.100:5000`)
+

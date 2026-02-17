@@ -127,33 +127,32 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       console.log('[AppData] Fetching data from server...');
       const remoteState = await getRemoteState();
-      console.log('[AppData] Got remote state:', remoteState ? 'success' : 'empty');
+      console.log('[AppData] Got remote state - bikes:', remoteState?.bikes?.length, 'rentals:', remoteState?.rentals?.length, 'notifications:', remoteState?.notifications?.length);
       setIsOnline(true);
 
       // Merge server data with local user session
-      // Server has: bikes, parkingZones, rentals, issues, notifications
-      // Local keeps: users, currentUserId (user session)
+      let mergedState: AppState | null = null;
       setState(prev => {
-        const merged: AppState = {
+        const newState: AppState = {
           ...prev,
-          // From server (admin manages these)
           bikes: remoteState.bikes || prev.bikes,
           parkingZones: remoteState.parkingZones || prev.parkingZones,
-          // Merge rentals - keep local rentals and add server ones
           rentals: mergeArraysById(prev.rentals, remoteState.rentals || []),
-          // Merge issues
           issues: mergeArraysById(prev.issues, remoteState.issues || []),
-          // Merge notifications
           notifications: mergeArraysById(prev.notifications, remoteState.notifications || []),
-          // Keep local users and merge with server users
           users: mergeArraysById(prev.users, remoteState.users || []),
-          // Keep current user session
           currentUserId: prev.currentUserId,
         };
-        return merged;
+        mergedState = newState;
+        console.log('[AppData] Merged state - rentals:', newState.rentals.length, 'notifications:', newState.notifications.length, 'users:', newState.users.length);
+        return newState;
       });
 
-      console.log('[AppData] Server data synced successfully');
+      // Save merged state to AsyncStorage
+      if (mergedState) {
+        await saveState(mergedState);
+        console.log('[AppData] Server data synced and saved to local storage');
+      }
     } catch (error) {
       console.warn('[AppData] Failed to fetch from server:', error);
       setIsOnline(false);
@@ -180,15 +179,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           const remoteState = await getRemoteState();
           setIsOnline(true);
           
-          setState(prev => ({
-            ...prev,
-            bikes: remoteState.bikes || prev.bikes,
-            parkingZones: remoteState.parkingZones || prev.parkingZones,
-            rentals: mergeArraysById(prev.rentals, remoteState.rentals || []),
-            issues: mergeArraysById(prev.issues, remoteState.issues || []),
-            notifications: mergeArraysById(prev.notifications, remoteState.notifications || []),
-            users: mergeArraysById(prev.users, remoteState.users || []),
-          }));
+          let mergedState: AppState | null = null;
+          setState(prev => {
+            const newState: AppState = {
+              ...prev,
+              bikes: remoteState.bikes || prev.bikes,
+              parkingZones: remoteState.parkingZones || prev.parkingZones,
+              rentals: mergeArraysById(prev.rentals, remoteState.rentals || []),
+              issues: mergeArraysById(prev.issues, remoteState.issues || []),
+              notifications: mergeArraysById(prev.notifications, remoteState.notifications || []),
+              users: mergeArraysById(prev.users, remoteState.users || []),
+            };
+            mergedState = newState;
+            return newState;
+          });
+          // Save merged state to AsyncStorage so it persists
+          if (mergedState) {
+            await saveState(mergedState);
+          }
+          console.log('[AppData] Startup sync complete - saved merged state');
         }
       } catch (error) {
         console.warn('[AppData] Could not connect to server:', error);
@@ -204,24 +213,26 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     return state.users.find((u) => u.id === state.currentUserId);
   }, [state.currentUserId, state.users]);
 
-  async function commit(next: AppState) {
+  async function commit(next: AppState): Promise<void> {
     setState(next);
     // Always save locally first
     await saveState(next);
-    // Then try to sync to server
+    // Then try to sync to server (best-effort, never throws)
     await syncToServer(next);
   }
 
-  async function syncToServer(stateToSync: AppState) {
+  async function syncToServer(stateToSync: AppState): Promise<void> {
     try {
       const serverUrl = await getServerUrl();
       if (serverUrl) {
         await putRemoteState(stateToSync);
         setIsOnline(true);
+        console.log('[AppData] Synced to server successfully');
       }
-    } catch (error) {
-      console.warn('[AppData] Failed to sync to server:', error);
+    } catch (error: any) {
+      console.warn('[AppData] Failed to sync to server:', error?.message || error);
       setIsOnline(false);
+      // Don't throw - sync is best-effort. Local state is already saved.
     }
   }
 
@@ -256,15 +267,51 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    const usernameTaken = state.users.some((u) => u.username.toLowerCase() === username.toLowerCase());
-    const emailTaken = state.users.some((u) => u.email.toLowerCase() === email);
-    if (usernameTaken) {
-      Alert.alert('Greška', 'Korisničko ime je već u upotrebi.');
-      return false;
-    }
-    if (emailTaken) {
-      Alert.alert('Greška', 'Email adresa je već u upotrebi.');
-      return false;
+    // Pull latest state from server first to check for duplicates
+    try {
+      const serverUrl = await getServerUrl();
+      if (serverUrl) {
+        const remoteState = await getRemoteState();
+        // Merge remote users into local state to check for conflicts
+        const allUsers = [...remoteState.users];
+        
+        const usernameTaken = allUsers.some((u) => u.username.toLowerCase() === username.toLowerCase());
+        const emailTaken = allUsers.some((u) => u.email.toLowerCase() === email);
+        
+        if (usernameTaken) {
+          Alert.alert('Greška', 'Korisničko ime je već u upotrebi.');
+          return false;
+        }
+        if (emailTaken) {
+          Alert.alert('Greška', 'Email adresa je već u upotrebi.');
+          return false;
+        }
+      } else {
+        // No server configured, just check local state
+        const usernameTaken = state.users.some((u) => u.username.toLowerCase() === username.toLowerCase());
+        const emailTaken = state.users.some((u) => u.email.toLowerCase() === email);
+        if (usernameTaken) {
+          Alert.alert('Greška', 'Korisničko ime je već u upotrebi.');
+          return false;
+        }
+        if (emailTaken) {
+          Alert.alert('Greška', 'Email adresa je već u upotrebi.');
+          return false;
+        }
+      }
+    } catch (error) {
+      // If we can't reach server, fall back to local validation
+      console.warn('[register] Could not check server for duplicates:', error);
+      const usernameTaken = state.users.some((u) => u.username.toLowerCase() === username.toLowerCase());
+      const emailTaken = state.users.some((u) => u.email.toLowerCase() === email);
+      if (usernameTaken) {
+        Alert.alert('Greška', 'Korisničko ime je već u upotrebi.');
+        return false;
+      }
+      if (emailTaken) {
+        Alert.alert('Greška', 'Email adresa je već u upotrebi.');
+        return false;
+      }
     }
 
     const salt = randomSalt();
@@ -286,9 +333,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       users: [...state.users, user],
     };
 
-    await commit(next);
-    Alert.alert('Uspeh', 'Nalog je uspešno kreiran.');
-    return true;
+    try {
+      await commit(next);
+      Alert.alert('Uspeh', 'Nalog je uspešno kreiran.');
+      return true;
+    } catch (error: any) {
+      // Rollback local state by reloading from storage
+      const savedState = await loadState();
+      if (savedState) {
+        setState(savedState);
+      }
+      
+      // Show error from server if available
+      const errorMsg = error?.message || 'Greška pri sinhronizaciji sa serverom.';
+      Alert.alert('Greška', errorMsg);
+      return false;
+    }
   }
 
   async function login(username: string, password: string): Promise<boolean> {
@@ -298,7 +358,37 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       Alert.alert('Greška', 'Unesite korisničko ime i lozinku.');
       return false;
     }
-    const user = state.users.find((x) => x.username.toLowerCase() === u.toLowerCase());
+
+    // Try to sync users from server first (in case local data was cleared)
+    let allUsers = state.users;
+    console.log('[login] Local users before server fetch:', allUsers.length, allUsers.map(u => u.username));
+    try {
+      const serverUrl = await getServerUrl();
+      console.log('[login] Server URL:', serverUrl);
+      if (serverUrl) {
+        const remoteState = await getRemoteState();
+        console.log('[login] Remote users:', remoteState?.users?.length, remoteState?.users?.map((u: any) => u.username));
+        if (remoteState?.users?.length) {
+          allUsers = mergeArraysById(state.users, remoteState.users);
+          console.log('[login] Merged users:', allUsers.length, allUsers.map(u => u.username));
+          // Update local state with server users
+          setState(prev => ({
+            ...prev,
+            users: mergeArraysById(prev.users, remoteState.users || []),
+            bikes: remoteState.bikes || prev.bikes,
+            parkingZones: remoteState.parkingZones || prev.parkingZones,
+            rentals: mergeArraysById(prev.rentals, remoteState.rentals || []),
+            issues: mergeArraysById(prev.issues, remoteState.issues || []),
+            notifications: mergeArraysById(prev.notifications, remoteState.notifications || []),
+          }));
+          setIsOnline(true);
+        }
+      }
+    } catch (error) {
+      console.warn('[login] Could not fetch users from server:', error);
+    }
+
+    const user = allUsers.find((x) => x.username.toLowerCase() === u.toLowerCase());
     if (!user) {
       Alert.alert('Greška', 'Pogrešno korisničko ime ili lozinka.');
       return false;
@@ -309,7 +399,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    const next: AppState = { ...state, currentUserId: user.id };
+    // Build full merged state with currentUserId set
+    const next: AppState = {
+      ...state,
+      users: allUsers,
+      currentUserId: user.id,
+    };
     await commit(next);
     return true;
   }

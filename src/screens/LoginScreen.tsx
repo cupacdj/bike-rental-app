@@ -56,6 +56,9 @@ export function LoginScreen() {
 
           <View style={{ height: 16 }} />
           <AppButton title="Nemate nalog? Registracija" onPress={() => nav.push({ name: 'Register' })} variant="ghost" icon="person-add-outline" />
+          
+          <View style={{ height: 8 }} />
+          <AppButton title="Sync Settings" onPress={() => nav.push({ name: 'SyncSettings' })} variant="ghost" icon="cloud-outline" />
         </View>
       </Screen>
     </View>

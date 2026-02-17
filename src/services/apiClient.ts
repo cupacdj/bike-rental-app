@@ -33,8 +33,15 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw { message: text || `HTTP ${res.status}`, status: res.status } as ApiError;
+    let errorMessage = `HTTP ${res.status}`;
+    try {
+      const json = await res.json();
+      errorMessage = json.error || json.message || errorMessage;
+    } catch {
+      const text = await res.text().catch(() => "");
+      errorMessage = text || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
   return (await res.json()) as T;
 }

@@ -80,6 +80,23 @@ export function ProfileScreen() {
         variant="danger"
         icon="log-out-outline"
       />
+
+      <View style={{ height: 12 }} />
+      <AppButton
+        title="Obriši lokalne podatke"
+        onPress={() => {
+          Alert.alert(
+            'Obriši lokalne podatke',
+            'Svi lokalni podaci će biti obrisani. Moraćete ponovo da se prijavite.',
+            [
+              { text: 'Otkaži', style: 'cancel' },
+              { text: 'Obriši', style: 'destructive', onPress: () => resetAllLocalData() },
+            ]
+          );
+        }}
+        variant="ghost"
+        icon="trash-outline"
+      />
       
     </ScrollView>
   );

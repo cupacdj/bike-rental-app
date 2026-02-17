@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Bike Rental Demo",
-    "slug": "bike-rental-demo",
+    "name": "Bike Rental",
+    "slug": "bike-rental",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -34,7 +34,7 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.anonymous.bikerentaldemo"
+      "package": "com.anonymous.bikerental"
     },
     "web": {
       "favicon": "./assets/favicon.png"

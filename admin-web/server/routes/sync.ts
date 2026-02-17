@@ -21,6 +21,36 @@ router.put('/state', (req: Request, res: Response): void => {
     res.status(400).json({ error: 'Invalid state' });
     return;
   }
+
+  // Validate no duplicate usernames or emails
+  if (newState.users && newState.users.length > 0) {
+    const usernames = new Map<string, string>();
+    const emails = new Map<string, string>();
+
+    for (const user of newState.users) {
+      const usernameLower = user.username.toLowerCase();
+      const emailLower = user.email.toLowerCase();
+
+      // Check for duplicate username
+      if (usernames.has(usernameLower)) {
+        res.status(400).json({ 
+          error: `Duplikat korisničko ime: "${user.username}" (korisnici: ${usernames.get(usernameLower)}, ${user.id})` 
+        });
+        return;
+      }
+      usernames.set(usernameLower, user.id);
+
+      // Check for duplicate email
+      if (emails.has(emailLower)) {
+        res.status(400).json({ 
+          error: `Duplikat email adresa: "${user.email}" (korisnici: ${emails.get(emailLower)}, ${user.id})` 
+        });
+        return;
+      }
+      emails.set(emailLower, user.id);
+    }
+  }
+
   setAppState(newState);
   res.json({ success: true });
 });

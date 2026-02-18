@@ -8,12 +8,12 @@ function now() {
 }
 
 export const seedParkingZones: ParkingZone[] = [
-  { id: 'pz_1', name: 'Trg Republike', lat: 44.8166, lng: 20.4602, radiusMeters: 180 },
-  { id: 'pz_2', name: 'Kalemegdan', lat: 44.8231, lng: 20.4502, radiusMeters: 220 },
-  { id: 'pz_3', name: 'Slavija', lat: 44.8025, lng: 20.4661, radiusMeters: 200 },
-  { id: 'pz_4', name: 'Ušće', lat: 44.8160, lng: 20.4345, radiusMeters: 240 },
-  { id: 'pz_5', name: 'Vukov spomenik', lat: 44.8047, lng: 20.4867, radiusMeters: 200 },
-  { id: 'pz_bilecka', name: 'Bilećka 14', lat: 44.7732, lng: 20.4785, radiusMeters: 100 },
+  { id: 'pz_1', name: 'Trg Republike', lat: 44.8166, lng: 20.4602, radiusMeters: 180, capacity: 15 },
+  { id: 'pz_2', name: 'Kalemegdan', lat: 44.8231, lng: 20.4502, radiusMeters: 220, capacity: 20 },
+  { id: 'pz_3', name: 'Slavija', lat: 44.8025, lng: 20.4661, radiusMeters: 200, capacity: 18 },
+  { id: 'pz_4', name: 'Ušće', lat: 44.8160, lng: 20.4345, radiusMeters: 240, capacity: 25 },
+  { id: 'pz_5', name: 'Vukov spomenik', lat: 44.8047, lng: 20.4867, radiusMeters: 200, capacity: 15 },
+  { id: 'pz_bilecka', name: 'Bilećka 14', lat: 44.7732, lng: 20.4785, radiusMeters: 100, capacity: 8 },
 ];
 
 export const seedBikes: Bike[] = [

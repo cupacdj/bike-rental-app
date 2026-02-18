@@ -33,6 +33,7 @@ export interface ParkingZone {
   lat: number;
   lng: number;
   radiusMeters: number;
+  capacity: number;
 }
 
 export interface Rental {

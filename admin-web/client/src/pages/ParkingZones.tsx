@@ -81,7 +81,8 @@ function ZoneModal({ zone, isOpen, onClose, onSave }: ZoneModalProps): JSX.Eleme
     name: '',
     lat: '',
     lng: '',
-    radiusMeters: '100'
+    radiusMeters: '100',
+    capacity: '10'
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<ParkingZoneFormErrors>({});
@@ -93,14 +94,16 @@ function ZoneModal({ zone, isOpen, onClose, onSave }: ZoneModalProps): JSX.Eleme
         name: zone.name || '',
         lat: zone.lat?.toString() || '',
         lng: zone.lng?.toString() || '',
-        radiusMeters: zone.radiusMeters?.toString() || '100'
+        radiusMeters: zone.radiusMeters?.toString() || '100',
+        capacity: zone.capacity?.toString() || '10'
       });
     } else {
       setForm({
         name: '',
         lat: '',
         lng: '',
-        radiusMeters: '100'
+        radiusMeters: '100',
+        capacity: '10'
       });
     }
     setErrors({});
@@ -119,6 +122,10 @@ function ZoneModal({ zone, isOpen, onClose, onSave }: ZoneModalProps): JSX.Eleme
     if (!form.radiusMeters || radius <= 0 || radius > 1000) {
       newErrors.radiusMeters = 'Radijus mora biti između 1 i 1000 metara';
     }
+    const cap = parseInt(form.capacity, 10);
+    if (!form.capacity || isNaN(cap) || cap < 1 || cap > 200) {
+      newErrors.capacity = 'Kapacitet mora biti između 1 i 200';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -133,7 +140,8 @@ function ZoneModal({ zone, isOpen, onClose, onSave }: ZoneModalProps): JSX.Eleme
         name: form.name.trim(),
         lat: parseFloat(form.lat),
         lng: parseFloat(form.lng),
-        radiusMeters: parseInt(form.radiusMeters, 10)
+        radiusMeters: parseInt(form.radiusMeters, 10),
+        capacity: parseInt(form.capacity, 10)
       };
 
       if (zone) {
@@ -199,7 +207,7 @@ function ZoneModal({ zone, isOpen, onClose, onSave }: ZoneModalProps): JSX.Eleme
             </label>
             
             {/* Map Picker */}
-            <div className="rounded-xl overflow-hidden border border-slate-700 mb-3" style={{ height: '250px' }}>
+            <div className="rounded-xl overflow-hidden border border-slate-700 mb-3" style={{ height: '350px' }}>
               <MapContainer
                 center={[currentLat, currentLng]}
                 zoom={14}
@@ -281,6 +289,28 @@ function ZoneModal({ zone, isOpen, onClose, onSave }: ZoneModalProps): JSX.Eleme
             {errors.radiusMeters && <p className="text-red-400 text-xs mt-1">{errors.radiusMeters}</p>}
             <p className="text-slate-500 text-xs mt-1">
               Preporučeno: 100-300m za manje zone, 300-500m za veće zone
+            </p>
+          </div>
+
+          {/* Capacity */}
+          <div>
+            <label className="label flex items-center gap-2">
+              <ParkingSquare size={16} />
+              Kapacitet (broj bicikala) *
+            </label>
+            <input
+              type="number"
+              value={form.capacity}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, capacity: e.target.value })}
+              className={`input ${errors.capacity ? 'border-red-500' : ''}`}
+              placeholder="10"
+              min="1"
+              max="200"
+              step="1"
+            />
+            {errors.capacity && <p className="text-red-400 text-xs mt-1">{errors.capacity}</p>}
+            <p className="text-slate-500 text-xs mt-1">
+              Maksimalan broj bicikala koji mogu biti parkirani u ovoj zoni
             </p>
           </div>
 
@@ -432,7 +462,7 @@ export default function ParkingZones(): JSX.Element {
               placeholder="Pretraži po nazivu..."
               value={searchTerm}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-              className="input pl-11 w-full"
+              className="input !pl-11"
             />
           </div>
         </div>
@@ -455,7 +485,7 @@ export default function ParkingZones(): JSX.Element {
           <Map size={20} className="text-indigo-400" />
           Pregled svih zona
         </h2>
-        <div className="rounded-xl overflow-hidden border border-slate-700" style={{ height: '350px' }}>
+        <div className="rounded-xl overflow-hidden border border-slate-700" style={{ height: '450px' }}>
           <MapContainer
             center={[44.8166, 20.4602]}
             zoom={12}
@@ -509,6 +539,7 @@ export default function ParkingZones(): JSX.Element {
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Naziv</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Lokacija</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Radijus</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Kapacitet</th>
                   <th className="text-right px-6 py-4 text-sm font-medium text-slate-400">Akcije</th>
                 </tr>
               </thead>
@@ -541,6 +572,12 @@ export default function ParkingZones(): JSX.Element {
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400">
                           <Circle size={12} />
                           {zone.radiusMeters}m
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
+                          <ParkingSquare size={12} />
+                          {zone.capacity} bicikala
                         </span>
                       </td>
                       <td className="px-6 py-4">

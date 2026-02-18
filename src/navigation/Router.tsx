@@ -21,6 +21,7 @@ import { EditProfileScreen } from '../screens/EditProfileScreen';
 import { ChangePasswordScreen } from '../screens/ChangePasswordScreen';
 import { ReportIssueScreen } from '../screens/ReportIssueScreen';
 import SyncSettingsScreen from '../screens/SyncSettingsScreen';
+import { ParkingZoneDetailsScreen } from '../screens/ParkingZoneDetailsScreen';
 import { useTheme } from '../contexts/ThemeContext';
 
 export function Router() {
@@ -78,6 +79,7 @@ export function Router() {
           {route.name === 'Tabs' && <Tabs tab={route.tab} />}
 
           {route.name === 'BikeDetails' && <BikeDetailsScreen bikeId={route.bikeId} />}
+          {route.name === 'ParkingZoneDetails' && <ParkingZoneDetailsScreen zoneId={route.zoneId} />}
           {route.name === 'QRScanner' && <QRScannerScreen />}
           {route.name === 'CaptureReturnPhoto' && (
             <CaptureReturnPhotoScreen rentalId={route.rentalId} endLat={route.endLat} endLng={route.endLng} />

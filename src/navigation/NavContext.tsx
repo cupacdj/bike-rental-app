@@ -6,6 +6,7 @@ export type Route =
   | { name: 'Register' }
   | { name: 'Tabs'; tab: TabKey }
   | { name: 'BikeDetails'; bikeId: string }
+  | { name: 'ParkingZoneDetails'; zoneId: string }
   | { name: 'QRScanner' }
   | { name: 'CaptureReturnPhoto'; rentalId: string; endLat?: number; endLng?: number }
   | { name: 'RentalSummary'; rentalId: string }

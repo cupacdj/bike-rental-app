@@ -1,10 +1,35 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import fs from 'fs';
+import QRCode from 'qrcode';
 import { Bike, BikeType, BikeStatus } from '../types';
 import { getAppState, saveState } from '../state';
 import { verifyAdmin } from '../middleware/auth';
+import { uploadsPath } from '../config/multer';
 
 const router = Router();
+
+// QR code directory
+const qrDir = path.join(uploadsPath, 'qr');
+if (!fs.existsSync(qrDir)) {
+  fs.mkdirSync(qrDir, { recursive: true });
+}
+
+/**
+ * Generate a QR code PNG for a bike and save it to uploads/qr/{bikeId}.png
+ * The QR content is "bike:{bikeId}" which the mobile app's scanner already parses.
+ */
+async function generateBikeQR(bikeId: string): Promise<string> {
+  const filePath = path.join(qrDir, `${bikeId}.png`);
+  await QRCode.toFile(filePath, `bike:${bikeId}`, {
+    type: 'png',
+    width: 512,
+    margin: 2,
+    color: { dark: '#000000', light: '#ffffff' },
+  });
+  return `/uploads/qr/${bikeId}.png`;
+}
 
 
 // Update bike location (called when bike is returned after rental)
@@ -48,6 +73,34 @@ router.patch('/:id/location', (req: Request, res: Response): void => {
 });
 
 
+// GET QR code image for a bike (generates on-demand if missing)
+// This route is public so the mobile app can access it without admin auth
+router.get('/:id/qr', async (req: Request, res: Response): Promise<void> => {
+  const appState = getAppState();
+  const bike = appState.bikes.find(b => b.id === req.params.id);
+  if (!bike) {
+    res.status(404).json({ error: 'Bicikl nije pronađen.' });
+    return;
+  }
+
+  const filePath = path.join(qrDir, `${bike.id}.png`);
+
+  // Generate if it doesn't exist yet (for bikes created before QR feature)
+  if (!fs.existsSync(filePath)) {
+    try {
+      await generateBikeQR(bike.id);
+      console.log(`[QR] Generated QR code for bike ${bike.label} (${bike.id})`);
+    } catch (err) {
+      console.error(`[QR] Failed to generate QR for bike ${bike.id}:`, err);
+      res.status(500).json({ error: 'Greška pri generisanju QR koda.' });
+      return;
+    }
+  }
+
+  res.sendFile(filePath);
+});
+
+
 router.get('/', verifyAdmin, (req: Request, res: Response): void => {
   const appState = getAppState();
   res.json(appState.bikes || []);
@@ -63,7 +116,7 @@ router.get('/:id', verifyAdmin, (req: Request, res: Response): void => {
   res.json(bike);
 });
 
-router.post('/', verifyAdmin, (req: Request, res: Response): void => {
+router.post('/', verifyAdmin, async (req: Request, res: Response): Promise<void> => {
   const appState = getAppState();
   const { label, type, pricePerHour, lat, lng, status } = req.body as {
     label?: string;
@@ -120,6 +173,14 @@ router.post('/', verifyAdmin, (req: Request, res: Response): void => {
 
   appState.bikes.push(newBike);
   saveState(appState);
+
+  // Generate QR code for the new bike
+  try {
+    const qrUrl = await generateBikeQR(newBike.id);
+    console.log(`[QR] Generated QR code for new bike ${newBike.label}: ${qrUrl}`);
+  } catch (err) {
+    console.error(`[QR] Failed to generate QR for bike ${newBike.id}:`, err);
+  }
 
   res.status(201).json(newBike);
 });

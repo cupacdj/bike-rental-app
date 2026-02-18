@@ -1,8 +1,8 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Clock, 
-  Search, 
+import React, { useState, useEffect, ChangeEvent } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Clock,
+  Search,
   User,
   Bike,
   MapPin,
@@ -11,30 +11,33 @@ import {
   Image,
   Eye,
   CheckCircle,
-  PlayCircle
-} from 'lucide-react';
-import { rentalsApi } from '../services/api';
-import { useToast } from '../context/ToastContext';
-import type { Rental, RentalStatus } from '../types';
+  PlayCircle,
+} from "lucide-react";
+import { rentalsApi } from "../services/api";
+import { useToast } from "../context/ToastContext";
+import type { Rental, RentalStatus } from "../types";
 
 function formatDate(timestamp: number | undefined): string {
-  if (!timestamp) return '-';
-  return new Date(timestamp).toLocaleString('sr-RS', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  if (!timestamp) return "-";
+  return new Date(timestamp).toLocaleString("sr-RS", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-function formatDuration(startAt: number | undefined, endAt: number | undefined): string {
-  if (!startAt) return '-';
+function formatDuration(
+  startAt: number | undefined,
+  endAt: number | undefined,
+): string {
+  if (!startAt) return "-";
   const end = endAt || Date.now();
   const diff = end - startAt;
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
+
   if (hours > 0) {
     return `${hours}h ${minutes}min`;
   }
@@ -42,15 +45,17 @@ function formatDuration(startAt: number | undefined, endAt: number | undefined):
 }
 
 function StatusBadge({ status }: { status: RentalStatus }): JSX.Element {
-  const isActive = status === 'active';
+  const isActive = status === "active";
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-      isActive 
-        ? 'bg-indigo-500/15 text-indigo-400' 
-        : 'bg-emerald-500/15 text-emerald-400'
-    }`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+        isActive
+          ? "bg-indigo-500/15 text-indigo-400"
+          : "bg-emerald-500/15 text-emerald-400"
+      }`}
+    >
       {isActive ? <PlayCircle size={12} /> : <CheckCircle size={12} />}
-      {isActive ? 'Aktivno' : 'Završeno'}
+      {isActive ? "Aktivno" : "Završeno"}
     </span>
   );
 }
@@ -61,10 +66,14 @@ interface RentalDetailsModalProps {
   onClose: () => void;
 }
 
-function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps): JSX.Element | null {
+function RentalDetailsModal({
+  rental,
+  isOpen,
+  onClose,
+}: RentalDetailsModalProps): JSX.Element | null {
   if (!isOpen || !rental) return null;
 
-  const duration = rental.endAt 
+  const duration = rental.endAt
     ? formatDuration(rental.startAt, rental.endAt)
     : formatDuration(rental.startAt, undefined);
 
@@ -78,8 +87,13 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Detalji iznajmljivanja</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-lg transition">
+          <h2 className="text-xl font-bold text-white">
+            Detalji iznajmljivanja
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-700 rounded-lg transition"
+          >
             <X size={20} className="text-slate-400" />
           </button>
         </div>
@@ -101,7 +115,9 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-400">Ime i prezime</p>
-                  <p className="text-white">{rental.user.firstName} {rental.user.lastName}</p>
+                  <p className="text-white">
+                    {rental.user.firstName} {rental.user.lastName}
+                  </p>
                 </div>
                 <div>
                   <p className="text-slate-400">Korisničko ime</p>
@@ -151,7 +167,9 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
           <div className="card bg-slate-800/50">
             <div className="flex items-center gap-3 mb-4">
               <Clock size={20} className="text-amber-400" />
-              <h3 className="font-semibold text-white">Vremenske informacije</h3>
+              <h3 className="font-semibold text-white">
+                Vremenske informacije
+              </h3>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -160,7 +178,9 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
               </div>
               <div>
                 <p className="text-slate-400">Završetak</p>
-                <p className="text-white">{rental.endAt ? formatDate(rental.endAt) : 'U toku'}</p>
+                <p className="text-white">
+                  {rental.endAt ? formatDate(rental.endAt) : "U toku"}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400">Trajanje</p>
@@ -169,7 +189,9 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
               <div>
                 <p className="text-slate-400">Ukupna cena</p>
                 <p className="text-white font-semibold">
-                  {rental.totalPrice ? `${rental.totalPrice.toLocaleString()} RSD` : 'Nije obračunato'}
+                  {rental.totalPrice
+                    ? `${rental.totalPrice.toLocaleString()} RSD`
+                    : "Nije obračunato"}
                 </p>
               </div>
             </div>
@@ -186,13 +208,17 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
                 {rental.startLat && rental.startLng && (
                   <div>
                     <p className="text-slate-400">Početna lokacija</p>
-                    <p className="text-white">{rental.startLat.toFixed(4)}, {rental.startLng.toFixed(4)}</p>
+                    <p className="text-white">
+                      {rental.startLat.toFixed(4)}, {rental.startLng.toFixed(4)}
+                    </p>
                   </div>
                 )}
                 {rental.endLat && rental.endLng && (
                   <div>
                     <p className="text-slate-400">Krajnja lokacija</p>
-                    <p className="text-white">{rental.endLat.toFixed(4)}, {rental.endLng.toFixed(4)}</p>
+                    <p className="text-white">
+                      {rental.endLat.toFixed(4)}, {rental.endLng.toFixed(4)}
+                    </p>
                   </div>
                 )}
               </div>
@@ -204,7 +230,9 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
             <div className="card bg-slate-800/50">
               <div className="flex items-center gap-3 mb-4">
                 <Image size={20} className="text-cyan-400" />
-                <h3 className="font-semibold text-white">Fotografija pri vraćanju</h3>
+                <h3 className="font-semibold text-white">
+                  Fotografija pri vraćanju
+                </h3>
               </div>
               <div className="rounded-lg overflow-hidden bg-slate-900">
                 <img
@@ -213,9 +241,10 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
                   className="w-full max-h-80 object-contain"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.currentTarget;
-                    target.style.display = 'none';
+                    target.style.display = "none";
                     if (target.parentElement) {
-                      target.parentElement.innerHTML = '<p class="text-slate-400 text-center py-8">Fotografija nije dostupna</p>';
+                      target.parentElement.innerHTML =
+                        '<p class="text-slate-400 text-center py-8">Fotografija nije dostupna</p>';
                     }
                   }}
                 />
@@ -237,8 +266,8 @@ function RentalDetailsModal({ rental, isOpen, onClose }: RentalDetailsModalProps
 function Rentals(): JSX.Element {
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [search, setSearch] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [search, setSearch] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string>("");
   const [selectedRental, setSelectedRental] = useState<Rental | null>(null);
   const [detailsOpen, setDetailsOpen] = useState<boolean>(false);
   const { showError } = useToast();
@@ -253,15 +282,15 @@ function Rentals(): JSX.Element {
       const data = await rentalsApi.getAll();
       setRentals(data);
     } catch (error) {
-      showError('Greška pri učitavanju iznajmljivanja');
+      showError("Greška pri učitavanju iznajmljivanja");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredRentals = rentals.filter(rental => {
+  const filteredRentals = rentals.filter((rental) => {
     const searchLower = search.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       rental.id.toLowerCase().includes(searchLower) ||
       rental.user?.username?.toLowerCase().includes(searchLower) ||
       rental.user?.firstName?.toLowerCase().includes(searchLower) ||
@@ -276,18 +305,22 @@ function Rentals(): JSX.Element {
     setDetailsOpen(true);
   };
 
-  const activeCount = rentals.filter(r => r.status === 'active').length;
-  const finishedCount = rentals.filter(r => r.status === 'finished').length;
+  const activeCount = rentals.filter((r) => r.status === "active").length;
+  const finishedCount = rentals.filter((r) => r.status === "finished").length;
   const totalRevenue = rentals
-    .filter(r => r.status === 'finished' && r.totalPrice)
+    .filter((r) => r.status === "finished" && r.totalPrice)
     .reduce((sum, r) => sum + (r.totalPrice || 0), 0);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white">Iznajmljivanja</h1>
-        <p className="text-slate-400 mt-1">Pregled svih iznajmljivanja u sistemu</p>
+        <h1 className="text-2xl lg:text-3xl font-bold text-white">
+          Iznajmljivanja
+        </h1>
+        <p className="text-slate-400 mt-1">
+          Pregled svih iznajmljivanja u sistemu
+        </p>
       </div>
 
       {/* Stats */}
@@ -320,7 +353,9 @@ function Rentals(): JSX.Element {
               <DollarSign size={20} className="text-amber-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{totalRevenue.toLocaleString()} RSD</p>
+              <p className="text-2xl font-bold text-white">
+                {totalRevenue.toLocaleString()} RSD
+              </p>
               <p className="text-xs text-slate-400">Ukupan prihod</p>
             </div>
           </div>
@@ -331,19 +366,23 @@ function Rentals(): JSX.Element {
       <div className="card">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={18} className="text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={search}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-              className="input pl-11"
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setSearch(e.target.value)
+              }
+              className="input !pl-10"
               placeholder="Pretraži po korisniku, biciklu..."
             />
           </div>
           <select
             value={filterStatus}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-            className="select w-48"
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setFilterStatus(e.target.value)
+            }
+            className="select !w-auto shrink-0"
           >
             <option value="">Svi statusi</option>
             <option value="active">Aktivna</option>
@@ -369,12 +408,14 @@ function Rentals(): JSX.Element {
         >
           <Clock size={48} className="mx-auto text-slate-600 mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">
-            {rentals.length === 0 ? 'Nema iznajmljivanja u sistemu' : 'Nema rezultata pretrage'}
+            {rentals.length === 0
+              ? "Nema iznajmljivanja u sistemu"
+              : "Nema rezultata pretrage"}
           </h3>
           <p className="text-slate-400">
-            {rentals.length === 0 
-              ? 'Iznajmljivanja će se pojaviti kada korisnici počnu da koriste sistem'
-              : 'Pokušajte sa drugim kriterijumima pretrage'}
+            {rentals.length === 0
+              ? "Iznajmljivanja će se pojaviti kada korisnici počnu da koriste sistem"
+              : "Pokušajte sa drugim kriterijumima pretrage"}
           </p>
         </motion.div>
       ) : (
@@ -407,15 +448,18 @@ function Rentals(): JSX.Element {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                         <span className="text-white font-semibold text-sm">
-                          {rental.user?.firstName?.[0]}{rental.user?.lastName?.[0]}
+                          {rental.user?.firstName?.[0]}
+                          {rental.user?.lastName?.[0]}
                         </span>
                       </div>
                       <div>
                         <p className="font-medium text-white">
-                          {rental.user ? `${rental.user.firstName} ${rental.user.lastName}` : 'Nepoznat'}
+                          {rental.user
+                            ? `${rental.user.firstName} ${rental.user.lastName}`
+                            : "Nepoznat"}
                         </p>
                         <p className="text-xs text-slate-500">
-                          @{rental.user?.username || '-'}
+                          @{rental.user?.username || "-"}
                         </p>
                       </div>
                     </div>
@@ -423,7 +467,9 @@ function Rentals(): JSX.Element {
                   <td>
                     <div className="flex items-center gap-2">
                       <Bike size={16} className="text-slate-400" />
-                      <span className="text-white">{rental.bike?.label || '-'}</span>
+                      <span className="text-white">
+                        {rental.bike?.label || "-"}
+                      </span>
                     </div>
                   </td>
                   <td className="text-slate-300 text-sm">
@@ -433,7 +479,9 @@ function Rentals(): JSX.Element {
                     {formatDuration(rental.startAt, rental.endAt)}
                   </td>
                   <td className="text-white font-medium">
-                    {rental.totalPrice ? `${rental.totalPrice.toLocaleString()} RSD` : '-'}
+                    {rental.totalPrice
+                      ? `${rental.totalPrice.toLocaleString()} RSD`
+                      : "-"}
                   </td>
                   <td>
                     <StatusBadge status={rental.status} />

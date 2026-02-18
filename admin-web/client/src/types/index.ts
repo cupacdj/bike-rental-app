@@ -99,6 +99,7 @@ export interface ParkingZone {
   lat: number;
   lng: number;
   radiusMeters: number;
+  capacity: number;
 }
 
 export interface LoginResponse {
@@ -136,6 +137,7 @@ export interface ParkingZoneFormData {
   lat: string;
   lng: string;
   radiusMeters: string;
+  capacity: string;
 }
 
 export interface ParkingZoneFormErrors {
@@ -143,6 +145,7 @@ export interface ParkingZoneFormErrors {
   lat?: string;
   lng?: string;
   radiusMeters?: string;
+  capacity?: string;
 }
 
 // Component prop types

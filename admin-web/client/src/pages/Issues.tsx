@@ -467,14 +467,14 @@ function Issues(): JSX.Element {
               type="text"
               value={search}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-              className="input pl-11"
+              className="input !pl-11"
               placeholder="Pretraži po opisu, korisniku, biciklu..."
             />
           </div>
           <select
             value={filterStatus}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-            className="select w-48"
+            className="select !w-auto shrink-0"
           >
             <option value="">Svi statusi</option>
             {ISSUE_STATUSES.map(status => (

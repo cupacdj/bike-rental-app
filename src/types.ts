@@ -31,6 +31,7 @@ export type ParkingZone = {
   lat: number;
   lng: number;
   radiusMeters: number;
+  capacity: number;
 };
 
 export type Rental = {

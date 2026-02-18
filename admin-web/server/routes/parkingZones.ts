@@ -23,14 +23,15 @@ router.get('/:id', verifyAdmin, (req: Request, res: Response): void => {
 
 router.post('/', verifyAdmin, (req: Request, res: Response): void => {
   const appState = getAppState();
-  const { name, lat, lng, radiusMeters } = req.body as {
+  const { name, lat, lng, radiusMeters, capacity } = req.body as {
     name?: string;
     lat?: number;
     lng?: number;
     radiusMeters?: number;
+    capacity?: number;
   };
 
-  if (!name || lat === undefined || lng === undefined || radiusMeters === undefined) {
+  if (!name || lat === undefined || lng === undefined || radiusMeters === undefined || capacity === undefined) {
     res.status(400).json({ error: 'Sva obavezna polja moraju biti popunjena.' });
     return;
   }
@@ -45,6 +46,11 @@ router.post('/', verifyAdmin, (req: Request, res: Response): void => {
     return;
   }
 
+  if (capacity < 1 || capacity > 200) {
+    res.status(400).json({ error: 'Kapacitet mora biti između 1 i 200.' });
+    return;
+  }
+
   if (appState.parkingZones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
     res.status(400).json({ error: 'Parking zona sa ovim imenom već postoji.' });
     return;
@@ -56,6 +62,7 @@ router.post('/', verifyAdmin, (req: Request, res: Response): void => {
     lat: parseFloat(String(lat)),
     lng: parseFloat(String(lng)),
     radiusMeters: parseInt(String(radiusMeters), 10),
+    capacity: parseInt(String(capacity), 10),
   };
 
   appState.parkingZones.push(newZone);
@@ -73,11 +80,12 @@ router.put('/:id', verifyAdmin, (req: Request, res: Response): void => {
   }
 
   const zone = appState.parkingZones[zoneIndex];
-  const { name, lat, lng, radiusMeters } = req.body as {
+  const { name, lat, lng, radiusMeters, capacity } = req.body as {
     name?: string;
     lat?: number;
     lng?: number;
     radiusMeters?: number;
+    capacity?: number;
   };
 
   if (lat !== undefined && (lat < -90 || lat > 90)) {
@@ -95,6 +103,11 @@ router.put('/:id', verifyAdmin, (req: Request, res: Response): void => {
     return;
   }
 
+  if (capacity !== undefined && (capacity < 1 || capacity > 200)) {
+    res.status(400).json({ error: 'Kapacitet mora biti između 1 i 200.' });
+    return;
+  }
+
   if (name && name.toLowerCase() !== zone.name.toLowerCase() &&
       appState.parkingZones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
     res.status(400).json({ error: 'Parking zona sa ovim imenom već postoji.' });
@@ -107,6 +120,7 @@ router.put('/:id', verifyAdmin, (req: Request, res: Response): void => {
     ...(lat !== undefined && { lat: parseFloat(String(lat)) }),
     ...(lng !== undefined && { lng: parseFloat(String(lng)) }),
     ...(radiusMeters !== undefined && { radiusMeters: parseInt(String(radiusMeters), 10) }),
+    ...(capacity !== undefined && { capacity: parseInt(String(capacity), 10) }),
   };
 
   appState.parkingZones[zoneIndex] = updatedZone;

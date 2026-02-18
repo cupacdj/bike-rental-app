@@ -92,14 +92,24 @@ export function MapScreen() {
           userInterfaceStyle={mode}
         >
           {state.parkingZones.map((z) => (
-            <Circle
-              key={z.id}
-              center={{ latitude: z.lat, longitude: z.lng }}
-              radius={z.radiusMeters}
-              strokeWidth={2}
-              strokeColor={theme.primary + 'CC'}
-              fillColor={theme.primary + '1A'}
-            />
+            <React.Fragment key={z.id}>
+              <Circle
+                center={{ latitude: z.lat, longitude: z.lng }}
+                radius={z.radiusMeters}
+                strokeWidth={2}
+                strokeColor={theme.primary + 'CC'}
+                fillColor={theme.primary + '1A'}
+              />
+              <Marker
+                coordinate={{ latitude: z.lat, longitude: z.lng }}
+                anchor={{ x: 0.5, y: 0.5 }}
+                onPress={() => nav.push({ name: 'ParkingZoneDetails', zoneId: z.id })}
+              >
+                <View style={styles.zoneMarker}>
+                  <Ionicons name="location" size={16} color={theme.primary} />
+                </View>
+              </Marker>
+            </React.Fragment>
           ))}
           {bikesToShow.map((b) => (
             <Marker
@@ -317,6 +327,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     marginTop: -2,
+  },
+
+  // Zone Marker
+  zoneMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: '#6366f1',
   },
 
   // FAB

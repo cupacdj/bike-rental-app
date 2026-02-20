@@ -714,12 +714,27 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: 'Fotografija je obavezna.' };
     }
 
-    let savedPhoto: string;
+    // Try to save photo locally first
+    let savedPhoto: string = input.photoUri;
     try {
       savedPhoto = await persistPhoto(input.photoUri, `issue_${Date.now()}`);
     } catch (e) {
-      console.warn(e);
-      return { ok: false, error: 'Neuspešno čuvanje fotografije.' };
+      console.warn('[reportIssue] Local photo save failed:', e);
+      // Continue with original URI - we'll try to upload to server
+    }
+
+    // Try to upload photo to server
+    try {
+      const serverUrl = await getServerUrl();
+      if (serverUrl) {
+        console.log('[reportIssue] Uploading photo to server...');
+        const serverPhotoUrl = await uploadImageAsync(input.photoUri, 'issue');
+        console.log('[reportIssue] Photo uploaded:', serverPhotoUrl);
+        savedPhoto = serverPhotoUrl;
+      }
+    } catch (e) {
+      console.warn('[reportIssue] Server photo upload failed:', e);
+      // Continue with local photo
     }
 
     const issue: IssueReport = {

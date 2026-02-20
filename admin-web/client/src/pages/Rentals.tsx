@@ -13,7 +13,7 @@ import {
   CheckCircle,
   PlayCircle,
 } from "lucide-react";
-import { rentalsApi } from "../services/api";
+import { rentalsApi, resolvePhotoUrl } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import type { Rental, RentalStatus } from "../types";
 
@@ -226,7 +226,7 @@ function RentalDetailsModal({
           )}
 
           {/* Return Photo */}
-          {rental.returnPhotoUri && (
+          {resolvePhotoUrl(rental.returnPhotoUri) && (
             <div className="card bg-slate-800/50">
               <div className="flex items-center gap-3 mb-4">
                 <Image size={20} className="text-cyan-400" />
@@ -236,7 +236,7 @@ function RentalDetailsModal({
               </div>
               <div className="rounded-lg overflow-hidden bg-slate-900">
                 <img
-                  src={rental.returnPhotoUri}
+                  src={resolvePhotoUrl(rental.returnPhotoUri)!}
                   alt="Fotografija pri vraćanju"
                   className="w-full max-h-80 object-contain"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {

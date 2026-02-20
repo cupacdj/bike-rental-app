@@ -7,8 +7,6 @@ import { upload, uploadsPath } from '../config/multer';
 
 const router = Router();
 
-const PORT = process.env.PORT || 5000;
-
 // GET full state (for mobile app sync)
 router.get('/state', (req: Request, res: Response): void => {
   res.json(getAppState());
@@ -78,9 +76,7 @@ router.post('/upload', upload.single('file'), (req: Request, res: Response): voi
     fs.unlinkSync(req.file.path);
   }
 
-  const host = req.headers.host || `localhost:${PORT}`;
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const url = `${protocol}://${host}/uploads/${kind}/${req.file.filename}`;
+  const url = `/uploads/${kind}/${req.file.filename}`;
 
   console.log('[Upload] File saved:', url);
   res.json({ url });

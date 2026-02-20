@@ -18,7 +18,7 @@ import {
   Check,
   LucideIcon
 } from 'lucide-react';
-import { issuesApi } from '../services/api';
+import { issuesApi, resolvePhotoUrl } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import type { Issue, IssueStatus } from '../types';
 
@@ -223,10 +223,10 @@ function IssueDetailsModal({ issue, isOpen, onClose, onSave }: IssueDetailsModal
                 <Image size={18} className="text-cyan-400" />
                 <h3 className="font-semibold text-white">Fotografija</h3>
               </div>
-              {issue.photoUri ? (
+              {resolvePhotoUrl(issue.photoUri) ? (
                 <div className="rounded-lg overflow-hidden bg-slate-900">
                   <img
-                    src={issue.photoUri}
+                    src={resolvePhotoUrl(issue.photoUri)!}
                     alt="Fotografija problema"
                     className="w-full max-h-64 object-contain"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {

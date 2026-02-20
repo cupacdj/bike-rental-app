@@ -1,6 +1,26 @@
 import type { Bike, Rental, Issue, DashboardStats, ParkingZone } from '../types';
 
-const API_BASE = process.env.REACT_APP_API_URL || '';
+export const API_BASE = process.env.REACT_APP_API_URL || '';
+
+/**
+ * Resolves a photo URL stored in state (may be a relative path, a full URL,
+ * or an old local device path that is no longer accessible).
+ * Returns a URL the browser can load, or null if not displayable.
+ */
+export function resolvePhotoUrl(uri: string | undefined | null): string | null {
+  if (!uri) return null;
+  // Already a relative uploads path - prepend API base
+  if (uri.startsWith('/uploads/')) return `${API_BASE}${uri}`;
+  // Full HTTP URL - use as-is (may be an old absolute URL from server)
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    // If it contains /uploads/, rewrite to use API_BASE to avoid wrong-host issues
+    const uploadsIdx = uri.indexOf('/uploads/');
+    if (uploadsIdx !== -1) return `${API_BASE}${uri.substring(uploadsIdx)}`;
+    return uri;
+  }
+  // Local device path - not accessible from browser
+  return null;
+}
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('adminToken');

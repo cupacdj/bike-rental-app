@@ -60,9 +60,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.listen(PORT, () => {
-  console.log(`🚀 Admin server running on http://localhost:${PORT}`);
-  console.log(`📱 Mobile app can sync with: http://<your-ip>:${PORT}`);
-  console.log(`\n🔐 Default admin login:`);
+  console.log(`Admin server running on http://localhost:${PORT}`);
+  console.log(`Mobile app can sync with: http://<your-ip>:${PORT}`);
+  console.log(`\nDefault admin login:`);
   console.log(`   Username: admin`);
   console.log(`   Password: admin123`);
 });
